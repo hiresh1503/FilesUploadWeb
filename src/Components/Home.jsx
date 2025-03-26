@@ -8,7 +8,6 @@ import {
 import { storage } from "./firebase";
 import { v4 } from "uuid";
 import Report from "./Report";
-// import Footer from "./footer";
 
 function Upload() {
   const [fileUpload, setFileUpload] = useState(null);
