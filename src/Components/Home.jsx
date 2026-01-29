@@ -1,23 +1,34 @@
-import React from "react";
 import "./Home.css";
 import { useState } from "react";
-import {
-  ref,
-  uploadBytes
-} from "firebase/storage";
+import { ref, uploadBytes } from "firebase/storage";
 import { storage } from "./firebase";
 import { v4 } from "uuid";
 import Report from "./Report";
+import axios from 'axios';
 
 function Upload() {
-  const [fileUpload, setFileUpload] = useState(null);
+  const [file, setFile] = useState(null);
+  const [filePath, setFilePath] = useState("");
 
-  const uploadFile = () => {
-    if (fileUpload == null) return;
-    const imageRef = ref(storage, `FilesUploaded/ ${fileUpload.name + v4()}`);
-    uploadBytes(imageRef, fileUpload).then(() => {
-      alert("Files Uploaded Successfully")
-    });
+  const uploadFile = async() => {
+    if (!file){
+      alert("Please select a file first");
+      return;
+    }
+
+    const path = `FilesUploaded/${file.name + v4()}`;
+    const fileRef = ref(storage, path);
+
+    await uploadBytes(fileRef, file);
+    setFilePath(path);
+
+    const response = await axios.post("http://localhost:5000/analyze", {
+      filePath: path
+    })
+
+    console.log("Backend response: ", response.data);
+    
+    alert("Files Uploaded Successfully");
   };
 
   return (
@@ -25,10 +36,17 @@ function Upload() {
       <input
         type="file"
         onChange={(event) => {
-          setFileUpload(event.target.files[0]);
+          setFile(event.target.files[0]);
         }}
       />
       <button onClick={uploadFile}> Upload Files</button>
+
+      {filePath && (
+        <p>
+          Upload Path: <b>{filePath}</b>
+        </p>
+        )}
+
     </div>
   );
 }
